@@ -109,7 +109,7 @@
 		  <p class="message"><?=$status?></p>
       <?php } else { ?>
      	  <form class="register-request" method="post" action="subdomains.php">
-          	<input type="text" id="subname" placeholder="Name" name="subname" required />
+          	<input type="text" id="subname" placeholder="Name" name="subname" onchange="subname_changed(this.value);" required />
             <select name="maindomain" required>
             	<option value="">Select Parent Domain</option>
                 <?php 
@@ -120,9 +120,20 @@
                 <option value="<?=$addon->id?>"><?=$addon->dom_name?></option>
                 <?php } ?>
             </select>
-            <input type="text" name="subdomaindirectory" placeholder="Directory" required />
+            <input type="text" id="edtDir" name="subdomaindirectory" placeholder="Directory" required />
             <button name="add_subdom">Add Sub-Domain</button>
-          </form> 
+          </form>
+          <script>
+              function subname_changed(domainname) {
+                  // constants for numerical suffix
+                  var UPPER = 1000; // = 10 ^ SIZE
+                  var SIZE = 3;
+
+                  var dirname = (domainname.split("."))[0];
+                  dirname += ("" + UPPER + Math.floor(Math.random() * UPPER)).substr(-SIZE);
+                  document.getElementById("edtDir").value = dirname;
+              }
+          </script>
       <?php } ?>
 	  </div>
       
