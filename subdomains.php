@@ -145,9 +145,14 @@
 		  <td>ID</td>
 		  <td>Domain Name</td>
 		  <td>Directory</td>
+          <td>Check</td>
           <td>Created On</td>
+          <td>Delete</td>
 	  </tr>
-	  <?php 
+	  <?php
+          if(isset($_GET) && array_key_exists("id", $_GET)) {
+              $mysqli->query("DELETE FROM `tbl_subdomain` WHERE id = " . $_GET['id']);
+          }
 		  $getAddon = $mysqli->query("SELECT * FROM `tbl_subdomain`");
 		  while($addon = $getAddon->fetch_object())
 		  {
@@ -156,7 +161,9 @@
 		  <td><?=$addon->id?></td>
 		  <td><?=$addon->full_domain?></td>
 		  <td>/public_html/<?=$addon->files_directory?></td>
+          <td><a href="//<?=$addon->full_domain?>/check.php">Check</a></td>
           <td><?=$addon->added_on?></td>
+          <td><a href="subdomains.php?id=<?=$addon->id?>">Delete</a></td>
 	  </tr>
 	  <?php } ?>  
 		  
