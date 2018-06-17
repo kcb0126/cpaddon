@@ -46,8 +46,9 @@
 
         $res = json_decode($result, TRUE);
 
-        //echo "<pre>";
-        //print_r($res);
+//        echo "<pre>";
+//        print_r($res);
+//        echo "</pre>";
     }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -74,14 +75,25 @@
   	  
       <br />
       <?php
+        $success = -1;
         if(isset($_POST) && !empty($_POST))
         {
-			if (strpos($result, "error") !== false) {
+            if (array_key_exists('error', $res['cpanelresult'])) {
+                $success = 0;
+			// MARK: if (strpos($result, "error") !== false) {
 				$resnow = explode('Sorry', $result);
-				$resisnow = explode(' or have your administrator', $resnow[1]);
-				echo '<div style="color:#F00">Sorry' . $resisnow[0] . '.<br /><br /></div>';
+				// MARK: $resisnow = explode(' or have your administrator', $resnow[1]);
+				// MARK: echo '<div style="color:#F00">Sorry' . $resisnow[0] . '.<br /><br /></div>';
+                $errmsgs = explode(')', $res['cpanelresult']['error']);
+                if(array_key_exists(1, $errmsgs)) {
+                    $errmsg = $errmsgs[1];
+                } else {
+                    $errmsg = $errmsgs[0];
+                }
+                echo '<div style="color:#F00">' . $errmsg . '<br /><br /></div>';
 			}
 			else {
+                $success = 1;
 				$resultnow = explode('"reason":"', $result);
 				$resultnowis = explode('","result":', $resultnow[1]);
 				
@@ -106,10 +118,28 @@
 		  <p class="message"><?=$status?></p>
       <?php } else { ?>
      	  <form class="register-request" method="post" action="addondomains.php">
-          	<input type="text" placeholder="Name" name="domainname" required />
-            <input type="text" name="domaindirectory" placeholder="Directory" required />
+          	<input id="edtDomain" type="text" placeholder="Name" name="domainname" onchange="domainname_changed(this.value);" required />
+            <input id="edtDir" type="text" name="domaindirectory" placeholder="Directory" required />
+              <?php if($success == 0) { ?>
+                    <div style="color:#F00;">Failed</div>
+              <?php } ?>
+              <?php if($success == 1) { ?>
+                  <div style="color:#1aac07">Success</div>
+              <?php } ?>
             <button name="add_addon">Add Domain</button>
-          </form> 
+          </form>
+          <script>
+              function domainname_changed(domainname) {
+                  // constants for numerical suffix
+                  var UPPER = 1000; // = 10 ^ SIZE
+                  var SIZE = 3;
+
+                  var dirname = (domainname.split("."))[0];
+                  console.log(dirname);
+                  dirname += ("" + UPPER + Math.floor(Math.random() * UPPER)).substr(-SIZE);
+                  document.getElementById("edtDir").value = dirname;
+              }
+          </script>
       <?php } ?>
 	  </div>
       
@@ -120,10 +150,15 @@
 	  <tr>
 		  <td>ID</td>
 		  <td>Domain Name</td>
-		  <td>Directory</td>
+		  <td>Check</td>
           <td>Created On</td>
+          <td>Delete</td>
 	  </tr>
-	  <?php 
+	  <?php
+          if(isset($_GET) && array_key_exists("id", $_GET)) {
+              $mysqli->query("DELETE FROM tbl_addondom WHERE id = ".$_GET['id']);
+          }
+
 		  $getAddon = $mysqli->query("SELECT * FROM tbl_addondom");
 		  while($addon = $getAddon->fetch_object())
 		  {
@@ -131,8 +166,10 @@
 	  <tr>
 		  <td><?=$addon->id?></td>
 		  <td><?=$addon->dom_name?></td>
-		  <td>/public_html/<?=$addon->dom_dir?></td>
+<!--		  <td>/public_html/--><?//=$addon->dom_dir?><!--</td>-->
+          <td><a href="//<?=$addon->dom_name?>/check.php">Check this domain</a> </td>
           <td><?=$addon->created_on?></td>
+          <td><a href="addondomains.php?id=<?=$addon->id?>">Delete</a></td>
 	  </tr>
 	  <?php } ?>  
 		  
